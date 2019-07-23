@@ -51,7 +51,7 @@ def download_file_from_url(url):
     :param url: file url
     """
     try:
-        rv = requests.get(url, timeout=(5, 25))
+        rv = requests.get(url, headers={'User-Agent': 'Superdesk-1.0'}, timeout=(5, 25), **request_kwargs)
     except requests.exceptions.MissingSchema:  # any route will do here, we only need host
         rv = requests.get(urljoin(url_for('static', filename='x', _external=True), url), timeout=15)
     if rv.status_code not in (200, 201):
