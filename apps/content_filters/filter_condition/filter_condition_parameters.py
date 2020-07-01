@@ -27,6 +27,13 @@ class FilterConditionParametersResource(Resource):
     url = "filter_conditions/parameters"
     resource_methods = ['GET']
     item_methods = []
+    schema = {
+        'field': {'type': 'string'},
+        'label': {'type': 'string'},
+        'operators': {'type': 'list'},
+        'values': {'type': 'list'},
+        'value_field': {'type': 'string'},
+    }
 
 
 class FilterConditionParametersService(BaseService):
@@ -171,7 +178,8 @@ class FilterConditionParametersService(BaseService):
     def _get_field_values(self):
         values = {}
         vocabularies_resource = get_resource_service('vocabularies')
-        values['anpa_category'] = vocabularies_resource.find_one(req=None, _id='categories')['items']
+        categories_cv = vocabularies_resource.find_one(req=None, _id='categories')
+        values['anpa_category'] = categories_cv.get('items') if categories_cv else []
         req = ParsedRequest()
         req.where = json.dumps({'$or': [{"schema_field": "genre"}, {"_id": "genre"}]})
         genre = vocabularies_resource.get(req=req, lookup=None)

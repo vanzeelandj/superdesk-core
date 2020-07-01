@@ -83,14 +83,14 @@ def local_to_utc_hour(hour):
 ABS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))
 BEHAVE_TESTS_FIXTURES_PATH = ABS_PATH + '/features/steps/fixtures'
 
-XML = False
 IF_MATCH = True
 BANDWIDTH_SAVER = False
 DATE_FORMAT = '%Y-%m-%dT%H:%M:%S+0000'
 ELASTIC_DATE_FORMAT = '%Y-%m-%d'
 ELASTIC_DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S'
-
 PAGINATION_LIMIT = 200
+
+MERGE_NESTED_DOCUMENTS = False
 
 #: keep default in sync with limit - so when client does not use pagination return all
 #:
@@ -112,8 +112,9 @@ server_url = urlparse(SERVER_URL)
 SERVER_DOMAIN = server_url.netloc or 'localhost'
 URL_PREFIX = env('URL_PREFIX', server_url.path.lstrip('/')) or ''
 
-VALIDATION_ERROR_STATUS = 400
 JSON_SORT_KEYS = False
+VALIDATION_ERROR_STATUS = 400
+VALIDATION_ERROR_AS_LIST = True
 
 CACHE_CONTROL = 'max-age=0, no-cache'
 
@@ -345,6 +346,7 @@ CORE_APPS = [
     'superdesk.allowed_values',
     'apps.picture_crop',
     'apps.picture_renditions',
+    'apps.video_edit',
     'content_api.publish',
     'content_api.items',
     'content_api.tokens',
@@ -358,6 +360,7 @@ CORE_APPS = [
     'superdesk.auth',
     'superdesk.attachments',
     'superdesk.auth_server',
+    'apps.links',
 ]
 
 #: Specify what modules should be enabled
@@ -551,6 +554,12 @@ SESSION_EXPIRY_MINUTES = int(env('SESSION_EXPIRY_MINUTES', 240))
 
 #: The number of minutes before content items are purged
 CONTENT_EXPIRY_MINUTES = int(env('CONTENT_EXPIRY_MINUTES', 0))
+
+#: The number of minutes before content items are purged from archived
+#:
+#: .. versionadded:: 1.34
+#:
+ARCHIVED_EXPIRY_MINUTES = int(env('ARCHIVED_EXPIRY_MINUTES', 0))
 
 #: The number of minutes before ingest items are purged
 INGEST_EXPIRY_MINUTES = int(env('INGEST_EXPIRY_MINUTES', 2 * 24 * 60))
@@ -774,7 +783,7 @@ KILL_TEMPLATE_NULL_FIELDS = ['byline', 'place']
 
 #: Video editor server
 VIDEO_SERVER_URL = env('VIDEO_SERVER_URL', 'http://localhost:5050')
-VIDEO_SERVER_ENABLE = strtobool(env('VIDEO_SERVER_ENABLE', 'false'))
+VIDEO_SERVER_ENABLED = strtobool(env('VIDEO_SERVER_ENABLED', 'false'))
 
 #: Whether to generate custom crops on image upload by default or not, if false means generate else don't generate
 NO_CUSTOM_CROPS = strtobool(env('NO_CUSTOM_CROPS', 'false'))
@@ -802,6 +811,12 @@ KEYWORDS_ADD_MISSING_ON_PUBLISH = False
 #: .. versionadded:: 2.0
 #:
 WORKFLOW_ALLOW_MULTIPLE_UPDATES = False
+
+#: Allow users who are not members on a desk to duplicate its content
+#:
+#: .. versionadded:: 1.34
+#:
+WORKFLOW_ALLOW_DUPLICATE_TO_NON_MEMBERS = False
 
 #: Enable archive autocomplete API
 #:
@@ -837,3 +852,24 @@ TANSA_PROFILES = {}
 
 # Enable ninjs to send all the fields for place in output.
 NINJS_PLACE_EXTENDED = False
+
+#: Define for how many hours in the past it shoudl return links for.
+#:
+#: Set to `0` to disable time limit.
+#:
+#: .. versionadded:: 1.34
+#:
+LINKS_MAX_HOURS = 0
+
+#: Set if missing users can be created automatically
+#:
+#: when using external authentication service
+#:
+#: .. versionadded:: 2.0
+USER_EXTERNAL_CREATE = False
+
+#: Desk to which external users will be assigned automatically.
+#:
+#: .. versionadded:: 2.0
+#:
+USER_EXTERNAL_DESK = None

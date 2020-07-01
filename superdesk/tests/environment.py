@@ -10,8 +10,8 @@
 
 import os
 from flask import json
+from copy import deepcopy
 
-from apps.io.tests import setup_providers, teardown_providers
 from apps.prepopulate.app_populate import AppPopulateCommand
 from apps.prepopulate.app_initialize import AppInitializeWithDataCommand
 from superdesk import tests
@@ -19,6 +19,7 @@ from superdesk.factory.app import get_app
 from superdesk.tests import setup_auth_user
 from superdesk.tests.mocks import TestSearchProvider
 from superdesk.tests.steps import get_macro_path
+from superdesk.tests.setup_teardown import setup_providers, teardown_providers
 
 
 readonly_fields = ['display_name', 'password', 'phone', 'first_name', 'last_name']
@@ -100,7 +101,7 @@ def before_feature(context, feature):
         # superdesk-aap don't use "setup_before_all" already
         config = getattr(setup_before_scenario, 'config', None)
         app_factory = getattr(setup_before_scenario, 'app_factory', None)
-    config = config or {}
+    config = deepcopy(config or {})
     app_factory = app_factory or get_app
 
     # set the MAX_TRANSMIT_RETRY_ATTEMPT to zero so that transmit does not retry

@@ -11,13 +11,14 @@ import json
 import itertools
 
 import superdesk
-from flask import current_app as app
+from flask import current_app as app, request
 
 from superdesk import get_resource_service
 from superdesk.errors import SuperdeskApiError
 from superdesk.resource import Resource
 from superdesk import config
 from superdesk.utils import SuperdeskBaseEnum
+from superdesk.timer import timer
 from bson.objectid import ObjectId
 from superdesk.services import BaseService
 from superdesk.notification import push_notification
@@ -135,6 +136,9 @@ def init_app(app):
     endpoint_name = 'sluglines'
     service = SluglineDeskService(endpoint_name, backend=superdesk.get_backend())
     SluglineDesksResource(endpoint_name, app=app, service=service)
+    endpoint_name = 'stages_overview'
+    service = StagesOverviewService(endpoint_name, backend=superdesk.get_backend())
+    StagesOverviewResource(endpoint_name, app=app, service=service)
 
 
 superdesk.privilege(name='desks', label='Desk Management', description='User can manage desks.')
@@ -254,6 +258,16 @@ class DesksService(BaseService):
         if items and items.count():
             raise SuperdeskApiError.preconditionFailedError(
                 message=_('Cannot delete desk as it has article(s) or referenced by versions of the article(s).'))
+
+    def add_member(self, desk_id, user_id):
+        desk = self.find_one(req=None, _id=desk_id)
+        if not desk:
+            raise ValueError('desk "{}" not found'.format(desk_id))
+        members = desk.get('members', [])
+        members.append({'user': user_id})
+        updates = {'members': members}
+        self.on_update(updates, desk)
+        self.system_update(desk['_id'], updates, desk)
 
     def delete(self, lookup):
         """
@@ -393,6 +407,10 @@ class SluglineDesksResource(Resource):
                                              ]}}
     resource_methods = ['GET']
     item_methods = []
+    schema = {
+        'place': {'type': 'string'},
+        'items': {'type': 'list'},
+    }
 
 
 class SluglineDeskService(BaseService):
@@ -531,6 +549,43 @@ class SluglineDeskService(BaseService):
                 else:
                     return (True, [])
         return (False, older_sluglines)
+
+
+class StagesOverviewResource(Resource):
+    url = r'desks/<regex("([a-f0-9]{24})|all"):desk_id>/stages_overview'
+    resource_title = "desk_stages_overview"
+    resource_methods = ['GET']
+
+
+class StagesOverviewService(BaseService):
+    """Aggregate count of items per stage"""
+
+    def on_fetched(self, doc):
+        desk_id = request.view_args['desk_id']
+        if desk_id == 'all':
+            agg_query = {}
+        else:
+            agg_query = {
+                "filter": {
+                    "term": {"task.desk": desk_id}
+                }
+            }
+
+        agg_query['aggs'] = {
+            "stages": {
+                "terms": {
+                    "field": "task.stage"
+                }
+            }
+        }
+
+        with timer("stages overview aggregation {desk_id!r}".format(desk_id=desk_id)):
+            response = app.data.elastic.search(agg_query, "archive", params={"size": 0})
+
+        doc["_items"] = [
+            {'count': b['doc_count'], 'stage': b['key']}
+            for b in response.hits['aggregations']['stages']['buckets']
+        ]
 
 
 def remove_profile_from_desks(item):

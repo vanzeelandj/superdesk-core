@@ -8,12 +8,14 @@
 # AUTHORS and LICENSE files distributed with this source code, or
 # at https://www.sourcefabric.org/superdesk/license
 import json
+
 from eve.utils import ParsedRequest
+from flask_babel import _
+
 from superdesk import get_resource_service, app
 from superdesk.resource import Resource
 from superdesk.services import BaseService
 from superdesk.errors import SuperdeskApiError
-from flask_babel import _
 
 
 class ContentFilterTestResource(Resource):
@@ -22,7 +24,8 @@ class ContentFilterTestResource(Resource):
         'filter_id': {'type': 'string'},
         'article_id': {'type': 'string'},
         'return_matching': {'type': 'boolean'},
-        'filter': {'type': 'dict'}
+        'filter': {'type': 'dict'},
+        'match_results': {'type': 'list'},
     }
     url = 'content_filters/test'
     resource_methods = ['POST']

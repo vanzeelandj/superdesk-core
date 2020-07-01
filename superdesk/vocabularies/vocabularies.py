@@ -49,9 +49,9 @@ class VocabulariesResource(Resource):
     schema = {
         '_id': {
             'type': 'string',
-            'required': True,
             'unique': True,
-            'regex': '^[a-zA-Z0-9-_]+$'
+            'required': True,
+            'regex': '^[a-zA-Z0-9-_]+$',
         },
         'display_name': {
             'type': 'string',
@@ -70,6 +70,7 @@ class VocabulariesResource(Resource):
             'required': False,
             'schema': {
                 'type': 'dict',
+                'schema': {},
             }
         },
         'popup_width': {
@@ -107,6 +108,10 @@ class VocabulariesResource(Resource):
         },
         'service': {
             'type': 'dict',
+            'schema': {},
+            'allow_unknown': True,
+            'keysrules': {'type': 'string'},
+            'valuesrules': {'type': 'integer'},
         },
         'priority': {
             'type': 'integer'
@@ -117,7 +122,9 @@ class VocabulariesResource(Resource):
             'nullable': True
         },
         'schema': {
-            'type': 'dict'
+            'type': 'dict',
+            'schema': {},
+            'allow_unknown': True,
         },
         'field_type': {
             'type': 'string',
@@ -125,12 +132,18 @@ class VocabulariesResource(Resource):
         },
         'field_options': {
             'type': 'dict',
+            'schema': {},
+            'allow_unknown': True,
         },
         'init_version': {
             'type': 'integer',
         },
         'preffered_items': {
             'type': 'boolean',
+        },
+        'disable_entire_category_selection': {
+            'type': 'boolean',
+            'default': False
         },
         'date_shortcuts': {
             'type': 'list',
@@ -151,6 +164,7 @@ class VocabulariesResource(Resource):
         'custom_field_config': {
             'type': 'dict',
             'nullable': True,
+            'schema': {},
         },
     }
 
