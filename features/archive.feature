@@ -228,7 +228,7 @@ Feature: News Items Archive
         """
         Given "archive"
             """
-            [{"_id": "testid1", "guid": "testid1", "task": {"desk": "#desks._id#"}}]
+            [{"_id": "testid1", "guid": "testid1", "task": {"desk": "#desks._id#"}, "state": "fetched"}]
             """
         When we get "/archive"
         Then we get list with 1 items
@@ -354,7 +354,7 @@ Feature: News Items Archive
         When we upload a file "bike.jpg" to "archive"
         Then we get new resource
         """
-        {"guid": "__any_value__", "firstcreated": "__any_value__", "versioncreated": "__any_value__", "state": "in_progress"}
+        {"guid": "#archive._id#", "firstcreated": "__any_value__", "versioncreated": "__any_value__", "state": "in_progress"}
         """
         When we patch latest
         """
@@ -1121,7 +1121,7 @@ Feature: News Items Archive
     Scenario: body_html is generated from draftJS state
         Given "archive"
         """
-        [{"_id": "test_editor_gen_1", "guid": "test_editor_gen_1", "headline": "test"}]
+        [{"_id": "test_editor_gen_1", "guid": "test_editor_gen_1", "headline": "test", "associations": {"foo": {"type": "text"}}}]
         """
 
         When we patch given
@@ -1172,6 +1172,9 @@ Feature: News Items Archive
                         "entityMap": {}
                     }]
                 }
+            },
+            "associations": {
+                "foo": {"type": "text"}
             }
         }
         """
